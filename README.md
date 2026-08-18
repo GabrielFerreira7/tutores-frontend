@@ -87,10 +87,43 @@ npm run format  # Prettier
 
 ## Próximos passos para produção (não implementados)
 
-- Autenticação real de admin (login + sessão) em vez de colar uma API key manualmente.
-- Streaming da resposta do tutor (Server-Sent Events) para reduzir a latência percebida.
-- Testes E2E (Playwright/Cypress) cobrindo o fluxo completo dentro de um iframe real.
-- Internacionalização, caso a plataforma passe a atender integradores fora do Brasil.
+Lista de evolução, conforme pedido pelo PRD (seção 8b) — nada abaixo está implementado
+neste MVP. Ver também a lista equivalente no README do backend (deploy da API, evolução do
+agente/RAG opcional).
+
+### Deploy e infraestrutura
+
+- **Hospedagem**: hoje só há `Dockerfile`/`compose.yaml` (build + `serve`) para rodar local;
+  em produção, um serviço de hospedagem estática com CDN (Vercel, Netlify, Cloudflare Pages,
+  ou S3+CloudFront) tende a ser mais barato e simples que manter o container `serve` no ar,
+  já que o resultado do build é só HTML/JS/CSS estático.
+- **Domínio**: seguindo o esquema sugerido no README do backend, algo como
+  `app.tutores.<dominio>` para o dashboard admin e `embed.tutores.<dominio>` para o widget —
+  ou os dois no mesmo domínio, já que hoje são só rotas (`/admin/*` e `/widget`) do mesmo
+  build. Separar em domínios diferentes só faria sentido se o widget precisasse de uma
+  política de CSP/cache distinta da do dashboard.
+- **`VITE_API_BASE_URL` por ambiente**: como essa variável é embutida em tempo de build (não
+  lida em runtime pelo container — ver seção Docker acima), produção precisa de um build
+  próprio apontando para a URL real da API, tipicamente feito pelo pipeline de CI/CD, não
+  manualmente.
+- **CI/CD**: pipeline rodando `npm run lint` + `npm run test` + `npm run build` em cada PR, e
+  deploy automático ao mergear na `main`. Hoje essa verificação é manual, feita antes de cada
+  push.
+- **Cache/CDN do widget**: o HTML/JS são estáticos e cacheáveis agressivamente (o conteúdo
+  dinâmico vem só das chamadas à API em runtime); vale configurar headers de cache longos com
+  *cache-busting* por hash de build (o Vite já gera nomes de arquivo com hash, então isso é
+  quase gratuito de configurar no CDN).
+
+### Produto e qualidade
+
+- **Autenticação real de admin** (login + sessão) em vez de colar uma API key manualmente —
+  hoje é aceitável por ser um único papel administrativo no escopo do MVP.
+- **Streaming da resposta do tutor** (Server-Sent Events) para reduzir a latência percebida no
+  widget, acompanhando a mesma evolução do backend.
+- **Testes E2E** (Playwright/Cypress) cobrindo o fluxo completo dentro de um iframe real,
+  complementando os testes de componente atuais.
+- **Paginação/busca** na listagem de tutores, caso o volume cresça além do que o MVP assume.
+- **Internacionalização**, caso a plataforma passe a atender integradores fora do Brasil.
 
 ## Diagrama de arquitetura
 
