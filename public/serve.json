@@ -2,6 +2,7 @@
   "cleanUrls": false,
   "rewrites": [
     { "source": "/admin/**", "destination": "/index.html" },
-    { "source": "/widget", "destination": "/index.html" }
+    { "source": "/widget", "destination": "/index.html" },
+    { "source": "/embed-demo", "destination": "/embed-demo.html" }
   ]
 }
