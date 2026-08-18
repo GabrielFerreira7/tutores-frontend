@@ -13,7 +13,13 @@ vi.mock("../src/api/adminClient", () => ({
 }));
 
 vi.mock("../src/admin/ApiKeyContext", () => ({
-  useApiKey: () => ({ apiKey: "test-admin-key", setApiKey: vi.fn(), clearApiKey: vi.fn() }),
+  useApiKey: () => ({
+    apiKey: "test-admin-key",
+    authError: null,
+    setApiKey: vi.fn(),
+    clearApiKey: vi.fn(),
+    invalidateApiKey: vi.fn(),
+  }),
 }));
 
 function renderNewTutorForm() {

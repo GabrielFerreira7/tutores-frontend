@@ -9,6 +9,10 @@ export class ApiError extends Error {
   }
 }
 
+export function isUnauthorized(err: unknown): err is ApiError {
+  return err instanceof ApiError && err.status === 401;
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
