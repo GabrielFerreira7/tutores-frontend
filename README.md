@@ -43,6 +43,12 @@ O `VITE_API_BASE_URL` é embutido no bundle **em tempo de build** (limitação d
 `VITE_*` não são lidas em runtime pelo container). Para apontar para um backend diferente do
 padrão, exporte a variável antes do build: `VITE_API_BASE_URL=https://api.exemplo.com docker compose up --build`.
 
+O dashboard começa **sem nenhum tutor** — o banco do backend não vem populado por padrão (dados
+de aplicação ficam fora do controle de versão de propósito). Para já abrir a listagem com dois
+tutores de exemplo prontos, rode o script de seed no backend:
+`docker compose exec backend python -m app.seed`. Detalhes de por que isso é um passo opt-in em
+vez de automático estão em ["Dados de exemplo (seed)" no `tutores-backend/README.md`](https://github.com/GabrielFerreira7/tutores-backend/blob/main/README.md#dados-de-exemplo-seed).
+
 ### Testes e lint
 
 ```bash
