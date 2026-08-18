@@ -5,6 +5,11 @@ import { describe, expect, it, vi } from "vitest";
 import { TutorFormPage } from "../src/admin/TutorFormPage";
 
 const createTutorMock = vi.fn();
+// Hoisted por segurança: se algum teste futuro exercitar o modo de edição (com
+// :tutorId presente), uma "invalidateApiKey" recriada a cada render entraria na
+// dependência do useEffect de carregamento e causaria loop infinito de fetch — ver o
+// mesmo problema (e o comentário completo) em EmbedSnippetPage.test.tsx.
+const invalidateApiKeyMock = vi.fn();
 
 vi.mock("../src/api/adminClient", () => ({
   createTutor: (...args: unknown[]) => createTutorMock(...args),
@@ -18,7 +23,7 @@ vi.mock("../src/admin/ApiKeyContext", () => ({
     authError: null,
     setApiKey: vi.fn(),
     clearApiKey: vi.fn(),
-    invalidateApiKey: vi.fn(),
+    invalidateApiKey: invalidateApiKeyMock,
   }),
 }));
 
