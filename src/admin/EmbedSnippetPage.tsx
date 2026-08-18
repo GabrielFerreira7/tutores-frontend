@@ -53,7 +53,11 @@ export function EmbedSnippetPage() {
             {copied ? "Copiado!" : "Copiar"}
           </button>
           <p>
-            URL direta: <code>{snippet.embed_url}</code>
+            URL direta:{" "}
+            <a href={snippet.embed_url} target="_blank" rel="noopener noreferrer">
+              {snippet.embed_url}
+            </a>{" "}
+            (abre o chat direto numa aba, sem o iframe — útil pra testar rápido)
           </p>
         </>
       )}

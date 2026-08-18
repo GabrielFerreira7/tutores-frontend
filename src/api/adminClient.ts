@@ -36,6 +36,12 @@ export function deactivateTutor(apiKey: string, id: string): Promise<Tutor> {
   });
 }
 
+// Sem endpoint dedicado no backend (só /deactivate existe) — reaproveita o PATCH
+// genérico, que já aceita "status" em TutorUpdate.
+export function activateTutor(apiKey: string, id: string): Promise<Tutor> {
+  return updateTutor(apiKey, id, { status: "active" });
+}
+
 export function getEmbedSnippet(apiKey: string, id: string): Promise<EmbedSnippet> {
   return apiFetch<EmbedSnippet>(`/api/admin/tutors/${id}/embed-snippet`, {
     headers: authHeaders(apiKey),
