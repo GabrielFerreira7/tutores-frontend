@@ -1,6 +1,8 @@
 {
   "cleanUrls": false,
   "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
     { "source": "/admin/**", "destination": "/index.html" },
     { "source": "/widget", "destination": "/index.html" },
     { "source": "/embed-demo", "destination": "/embed-demo.html" }

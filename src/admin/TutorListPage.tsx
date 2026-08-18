@@ -4,6 +4,7 @@ import { activateTutor, deactivateTutor, listTutors } from "../api/adminClient";
 import { isUnauthorized } from "../api/client";
 import type { Tutor } from "../types/tutor";
 import { useApiKey } from "./ApiKeyContext";
+import { Spinner } from "./Spinner";
 
 export function TutorListPage() {
   const { apiKey, invalidateApiKey } = useApiKey();
@@ -62,7 +63,7 @@ export function TutorListPage() {
         <Link to="/admin/tutors/new">+ Novo tutor</Link>
       </header>
 
-      {loading && <p>Carregando...</p>}
+      {loading && <Spinner />}
       {error && (
         <p role="alert" className="form-error">
           {error}

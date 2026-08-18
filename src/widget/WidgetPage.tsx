@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { getChatHistory, sendChatMessage } from "../api/publicClient";
 
 interface DisplayMessage {
@@ -82,7 +83,11 @@ export function WidgetPage() {
         )}
         {messages.map((message, index) => (
           <div key={index} className={`widget-message widget-message-${message.role}`}>
-            {message.content}
+            {message.role === "assistant" ? (
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            ) : (
+              message.content
+            )}
           </div>
         ))}
         {sending && <div className="widget-message widget-message-assistant">Digitando...</div>}
