@@ -378,10 +378,9 @@ a:hover {
 }
 
 .widget-message {
-  max-width: 80%;
+  max-width: 85%;
   padding: 0.55rem 0.8rem;
   border-radius: 14px;
-  white-space: pre-wrap;
   word-break: break-word;
   animation: message-in 180ms ease both;
 }
@@ -391,12 +390,73 @@ a:hover {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
   border-bottom-right-radius: 4px;
+  white-space: pre-wrap;
 }
 
 .widget-message-assistant {
   align-self: flex-start;
   background: var(--color-bg);
   border-bottom-left-radius: 4px;
+}
+
+/* Conteúdo Markdown renderizado (resposta do tutor) — o LLM devolve markdown com
+   frequência (##, **negrito**, blocos de código); antes disso era mostrado como
+   texto cru com os símbolos literais aparecendo na bolha. */
+.widget-message-assistant > :first-child {
+  margin-top: 0;
+}
+
+.widget-message-assistant > :last-child {
+  margin-bottom: 0;
+}
+
+.widget-message-assistant p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.widget-message-assistant ul,
+.widget-message-assistant ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.widget-message-assistant li + li {
+  margin-top: 0.15rem;
+}
+
+.widget-message-assistant h1,
+.widget-message-assistant h2,
+.widget-message-assistant h3 {
+  font-size: 0.95rem;
+  margin: 0.6rem 0 0.3rem;
+}
+
+.widget-message-assistant strong {
+  font-weight: 700;
+}
+
+.widget-message-assistant code {
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: 0.85em;
+  background: rgba(15, 23, 20, 0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.widget-message-assistant pre {
+  background: #12181a;
+  color: #f2f2f0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.widget-message-assistant pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
 }
 
 .widget-input {
