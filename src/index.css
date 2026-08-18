@@ -1,7 +1,6 @@
 :root {
   color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Um único hue dominante (teal), com contraste real entre tinta/superfície/fundo
      em vez de uma paleta tímida e uniformemente distribuída. */
@@ -42,17 +41,21 @@ body {
   color: var(--color-text);
 }
 
+/* Distinção por peso/tamanho/tracking no próprio system-ui, não por uma fonte de
+   display carregada via rede — dashboards administrativos ("Operate", não uma
+   página de marketing) não precisam de uma face com ponto de vista, e uma fonte
+   de "destaque" como Space Grotesk já é comum o suficiente em UI gerada por IA
+   pra deixar de ser distintiva (era a escolha anterior aqui; substituída). */
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
   letter-spacing: -0.02em;
   line-height: 1.15;
+  font-weight: 700;
 }
 
 h1 {
   font-size: 1.75rem;
-  font-weight: 600;
 }
 
 :focus-visible {
@@ -143,8 +146,7 @@ a:hover {
 }
 
 .admin-brand {
-  font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: -0.01em;
   text-decoration: none;

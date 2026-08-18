@@ -65,7 +65,7 @@ npm run format  # Prettier
 | Autenticação admin no cliente | Chave colada pelo usuário, guardada em `localStorage`, enviada em `X-Admin-Api-Key` a cada chamada | Sem backend de sessão/login no escopo do MVP; a chave nunca é exposta na página do widget público |
 | Sessão de conversa do widget | `session_id` retornado pelo backend, persistido em `localStorage` por tutor | Permite que o usuário recarregue o iframe e continue a mesma conversa (RF de continuidade de sessão) |
 | Estilo | CSS simples, sem design system/UI kit | O widget precisa carregar leve dentro de um iframe; dashboard tem escopo pequeno o suficiente para não justificar uma biblioteca de componentes |
-| Fonte de destaque (`Space Grotesk`) só no dashboard admin | Carregada via `useAdminDisplayFont` (injeta `<link>` no `<head>` só quando `/admin/*` monta), nunca no `/widget` | Identidade visual mais forte que o `system-ui` padrão sem pagar o custo de uma requisição de rede extra no widget — que roda dentro do site de terceiros e deve carregar o mais rápido possível |
+| Tipografia dos headings | Peso/tamanho/tracking sobre o próprio `system-ui`, sem carregar fonte externa | Primeira tentativa usou `Space Grotesk` via Google Fonts; um scanner de anti-padrões de design (`impeccable`, ver nota abaixo) sinalizou que ela já é comum o suficiente em UI gerada por IA pra deixar de ser distintiva. A própria referência da ferramenta também nota que telas "Operate" (dashboards administrativos, não páginas de marketing) são bem atendidas por stacks de sistema — resultado: zero requisição de rede extra, zero dependência, mesmo contraste visual |
 
 ## Fluxo embed ponta a ponta (visão do frontend)
 
