@@ -14,6 +14,37 @@
         border: 1px solid #e2e2e2;
         border-radius: 12px;
       }
+      form {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+      }
+      input {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font: inherit;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid #0ea5a5;
+        background: #0ea5a5;
+        color: #fff;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #fff;
+        color: #333;
+        border-color: #ccc;
+      }
+      #status {
+        color: #b3261e;
+      }
+      #widget-container {
+        margin-top: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -23,16 +54,91 @@
       <code>&lt;iframe&gt;</code>, exatamente como recebido no snippet gerado pelo dashboard admin.
     </p>
     <p>
-      Substitua <code>SEU_TUTOR_ID</code> e <code>SEU_EMBED_TOKEN</code> abaixo pelos valores
-      retornados em <code>GET /api/admin/tutors/{id}/embed-snippet</code> (ou copie o snippet
-      pronto direto da tela "Embed" do dashboard).
+      Cole abaixo a <strong>URL direta</strong> de um tutor (copie da tela "Embed" do dashboard
+      admin, em <code>/admin/tutors/{id}/embed</code>) para incorporar o iframe dele na hora,
+      sem precisar editar este arquivo:
     </p>
 
-    <iframe
-      src="http://localhost:5173/widget?tutorId=SEU_TUTOR_ID&token=SEU_EMBED_TOKEN"
-      width="380"
-      height="560"
-      title="Chat do tutor"
-    ></iframe>
+    <form id="embed-form">
+      <input
+        id="widget-url"
+        type="text"
+        placeholder="http://localhost:5173/widget?tutorId=...&token=..."
+        autocomplete="off"
+      />
+      <button type="submit">Carregar</button>
+      <button type="button" class="secondary" id="clear-btn">Limpar</button>
+    </form>
+    <p id="status"></p>
+
+    <div id="widget-container"></div>
+
+    <script>
+      const form = document.getElementById("embed-form");
+      const input = document.getElementById("widget-url");
+      const status = document.getElementById("status");
+      const container = document.getElementById("widget-container");
+
+      function extractParams(rawValue) {
+        // Aceita tanto a URL completa quanto só "?tutorId=...&token=..." colado.
+        try {
+          const url = new URL(rawValue, window.location.origin);
+          return {
+            tutorId: url.searchParams.get("tutorId"),
+            token: url.searchParams.get("token"),
+          };
+        } catch {
+          return { tutorId: null, token: null };
+        }
+      }
+
+      function renderWidget(tutorId, token) {
+        // Monta o src usando a origem desta própria página (não a que veio colada), pra
+        // funcionar mesmo se o snippet foi copiado com outro host/porta de frontend.
+        const src = `${window.location.origin}/widget?tutorId=${encodeURIComponent(tutorId)}&token=${encodeURIComponent(token)}`;
+        container.innerHTML = "";
+        const iframe = document.createElement("iframe");
+        iframe.src = src;
+        iframe.width = "380";
+        iframe.height = "560";
+        iframe.title = "Chat do tutor";
+        container.appendChild(iframe);
+        status.textContent = "";
+
+        const params = new URLSearchParams(window.location.search);
+        params.set("tutorId", tutorId);
+        params.set("token", token);
+        history.replaceState(null, "", `?${params.toString()}`);
+      }
+
+      function tryLoad(rawValue) {
+        const { tutorId, token } = extractParams(rawValue);
+        if (!tutorId || !token) {
+          status.textContent = "Não encontrei tutorId e token nessa URL. Copie a \"URL direta\" da tela Embed do dashboard admin.";
+          return;
+        }
+        renderWidget(tutorId, token);
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        tryLoad(input.value.trim());
+      });
+
+      document.getElementById("clear-btn").addEventListener("click", () => {
+        input.value = "";
+        container.innerHTML = "";
+        status.textContent = "";
+        history.replaceState(null, "", window.location.pathname);
+      });
+
+      // Se a página já foi aberta com ?tutorId=...&token=... (link direto/bookmarkado),
+      // carrega automaticamente sem precisar colar nada.
+      const initial = extractParams(window.location.href);
+      if (initial.tutorId && initial.token) {
+        input.value = `${window.location.origin}/widget${window.location.search}`;
+        renderWidget(initial.tutorId, initial.token);
+      }
+    </script>
   </body>
 </html>
