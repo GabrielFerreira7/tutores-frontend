@@ -2,7 +2,11 @@
 
 Dashboard administrativo + widget de embed do MVP da **Plataforma de Tutores Personalizados**
 (desafio técnico DOT Digital Group). React + TypeScript + Vite. Ver o repositório irmão
-`../backend` para a API.
+[`tutores-backend`](https://github.com/GabrielFerreira7/tutores-backend) para a API.
+
+Documentação adicional: [plano de implementação](docs/IMPLEMENTATION_PLAN.md) (diagramas de
+arquitetura, decisões e trade-offs discutidos antes de implementar) e
+[roteiro de testes manuais](docs/TESTING.md) (cobre os dois repositórios juntos).
 
 > **Aviso de processo**: este código foi construído com o auxílio de um agente de codificação
 > (Claude Code) sob supervisão humana, conforme exigido pelo enunciado do desafio — não foi
@@ -23,9 +27,11 @@ A aplicação sobe em `http://localhost:5173`:
   configurada no backend na primeira visita, armazenada apenas no `localStorage` do navegador).
 - `http://localhost:5173/widget?tutorId=...&token=...` — página isolada do widget, pensada para
   ser carregada dentro de um `<iframe>`.
-- `http://localhost:5173/embed-demo.html` — página estática simulando o site de um integrador
-  com o widget incorporado via iframe (edite os parâmetros `tutorId`/`token` no arquivo
-  `public/embed-demo.html` com valores reais de um tutor criado no backend).
+- `http://localhost:5173/embed-demo.html` (ou `/embed-demo`, sem extensão — ambos funcionam)
+  — página simulando o site de um integrador. Cole a "URL direta" copiada da tela Embed do
+  dashboard admin no formulário da página e clique em "Carregar": o iframe é montado na hora,
+  sem precisar editar o arquivo. O estado fica refletido na querystring da própria página
+  (`?tutorId=...&token=...`), então também funciona como link direto/bookmarkável.
 
 ### Docker
 
@@ -41,7 +47,8 @@ padrão, exporte a variável antes do build: `VITE_API_BASE_URL=https://api.exem
 
 ```bash
 npm run test
-npm run lint
+npm run lint    # ESLint
+npm run format  # Prettier
 ```
 
 ## Variáveis de ambiente
@@ -63,11 +70,13 @@ npm run lint
 
 1. Admin acessa `/admin/tutors`, informa a `ADMIN_API_KEY` uma vez.
 2. Cria um tutor em `/admin/tutors/new` (instruções + fontes de conhecimento).
-3. Abre `/admin/tutors/{id}/embed`, copia o `<iframe>` pronto.
-4. Cola o snippet em `public/embed-demo.html` (ou em qualquer site real) no lugar de
-   `SEU_TUTOR_ID`/`SEU_EMBED_TOKEN`.
-5. Abre `embed-demo.html` no navegador — o iframe carrega `/widget`, que conversa com
-   `POST /api/public/chat` do backend usando apenas o `tutorId` e o `token` da URL.
+3. Abre `/admin/tutors/{id}/embed`: copia o `<iframe>` pronto para colar num site real, ou
+   clica na "URL direta" (link clicável) para abrir o chat direto numa aba, fora do iframe.
+4. Para simular o site do integrador sem sair do ambiente local: abre `/embed-demo.html`,
+   cola a mesma "URL direta" no formulário da página e clica em "Carregar" — nenhuma edição
+   de arquivo necessária.
+5. O iframe/aba carrega `/widget`, que conversa com `POST /api/public/chat` do backend
+   usando apenas o `tutorId` e o `token` da URL — a admin API key nunca chega até aqui.
 
 ## Limitações conhecidas do MVP
 
@@ -82,3 +91,26 @@ npm run lint
 - Streaming da resposta do tutor (Server-Sent Events) para reduzir a latência percebida.
 - Testes E2E (Playwright/Cypress) cobrindo o fluxo completo dentro de um iframe real.
 - Internacionalização, caso a plataforma passe a atender integradores fora do Brasil.
+
+## Diagrama de arquitetura
+
+Ver [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) para os diagramas completos
+(Mermaid: componentes, sequência de conversa, sequência de setup de embed, modelo de dados).
+Resumo em ASCII (frontend, backend, agente, persistência, embed):
+
+```
+Integrador (site) --iframe--> Widget (frontend, esta app) --HTTP--> Backend API
+                                       |                                |
+                              Admin (esta app, /admin/*)                |
+                                       |                                |
+                                 X-Admin-Api-Key                   embed_token
+                                       |                                |
+                                       +----------> Admin API ----------+
+                                                          |
+                                                    Agente (Pydantic AI)
+                                                          |
+                                                    Tool: fetch_source
+                                                          |
+                                              SQLite (Tutor, Source,
+                                              ChatSession, ChatMessage)
+```
