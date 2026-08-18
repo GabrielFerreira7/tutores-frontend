@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Site do Integrador (demo)</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 720px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+      }
+      iframe {
+        border: 1px solid #e2e2e2;
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Site fictício do integrador</h1>
+    <p>
+      Esta página simula um site de terceiros que incorporou o widget de chat via
+      <code>&lt;iframe&gt;</code>, exatamente como recebido no snippet gerado pelo dashboard admin.
+    </p>
+    <p>
+      Substitua <code>SEU_TUTOR_ID</code> e <code>SEU_EMBED_TOKEN</code> abaixo pelos valores
+      retornados em <code>GET /api/admin/tutors/{id}/embed-snippet</code> (ou copie o snippet
+      pronto direto da tela "Embed" do dashboard).
+    </p>
+
+    <iframe
+      src="http://localhost:5173/widget?tutorId=SEU_TUTOR_ID&token=SEU_EMBED_TOKEN"
+      width="380"
+      height="560"
+      title="Chat do tutor"
+    ></iframe>
+  </body>
+</html>
