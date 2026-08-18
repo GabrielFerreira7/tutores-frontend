@@ -13,4 +13,6 @@ WORKDIR /app
 RUN npm install -g serve
 COPY --from=build /app/dist ./dist
 EXPOSE 5173
-CMD ["serve", "-s", "dist", "-l", "5173"]
+# No "-s" (SPA catch-all): it would also swallow real static files like embed-demo.html.
+# dist/serve.json (copied from public/ at build time) rewrites only the SPA routes we need.
+CMD ["serve", "dist", "-l", "5173"]
