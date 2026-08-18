@@ -1,9 +1,11 @@
 import { FormEvent, ReactNode, useState } from "react";
 import { useApiKey } from "./ApiKeyContext";
+import { useAdminDisplayFont } from "./useAdminDisplayFont";
 
 export function ApiKeyGate({ children }: { children: ReactNode }) {
   const { apiKey, authError, setApiKey } = useApiKey();
   const [input, setInput] = useState("");
+  useAdminDisplayFont();
 
   if (apiKey) {
     return <>{children}</>;

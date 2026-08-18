@@ -4,6 +4,7 @@ import { createTutor, getTutor, updateTutor } from "../api/adminClient";
 import { isUnauthorized } from "../api/client";
 import type { SourceInput } from "../types/tutor";
 import { useApiKey } from "./ApiKeyContext";
+import { Spinner } from "./Spinner";
 
 export function TutorFormPage() {
   const { apiKey, invalidateApiKey } = useApiKey();
@@ -90,7 +91,7 @@ export function TutorFormPage() {
   }
 
   if (loading) {
-    return <p>Carregando...</p>;
+    return <Spinner />;
   }
 
   return (
