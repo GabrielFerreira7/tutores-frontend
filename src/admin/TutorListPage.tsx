@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { deactivateTutor, listTutors } from "../api/adminClient";
+import { activateTutor, deactivateTutor, listTutors } from "../api/adminClient";
 import { isUnauthorized } from "../api/client";
 import type { Tutor } from "../types/tutor";
 import { useApiKey } from "./ApiKeyContext";
@@ -36,17 +36,22 @@ export function TutorListPage() {
     }
   }, [apiKey, load]);
 
-  async function handleDeactivate(id: string) {
+  async function handleStatusChange(
+    id: string,
+    action: "activate" | "deactivate",
+    apply: (key: string, id: string) => Promise<Tutor>
+  ) {
     if (!apiKey) return;
     try {
-      await deactivateTutor(apiKey, id);
+      await apply(apiKey, id);
       await load(apiKey);
     } catch (err) {
       if (isUnauthorized(err)) {
         invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
         return;
       }
-      setError(err instanceof Error ? err.message : "Erro ao desativar tutor.");
+      const verb = action === "activate" ? "ativar" : "desativar";
+      setError(err instanceof Error ? err.message : `Erro ao ${verb} tutor.`);
     }
   }
 
@@ -85,9 +90,19 @@ export function TutorListPage() {
                 <td className="row-actions">
                   <Link to={`/admin/tutors/${tutor.id}`}>Editar</Link>
                   <Link to={`/admin/tutors/${tutor.id}/embed`}>Embed</Link>
-                  {tutor.status === "active" && (
-                    <button type="button" onClick={() => handleDeactivate(tutor.id)}>
+                  {tutor.status === "active" ? (
+                    <button
+                      type="button"
+                      onClick={() => handleStatusChange(tutor.id, "deactivate", deactivateTutor)}
+                    >
                       Desativar
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleStatusChange(tutor.id, "activate", activateTutor)}
+                    >
+                      Ativar
                     </button>
                   )}
                 </td>
