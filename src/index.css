@@ -366,10 +366,18 @@ a:hover {
 .widget-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  /* Centraliza numa coluna de leitura confortável (como Claude/ChatGPT) em vez de
+     esticar as bolhas pela largura toda quando o widget é aberto fora do iframe
+     estreito (ex.: pelo link "URL direta" numa aba cheia). Dentro do iframe
+     (380px de largura no snippet padrão) o max-width nunca chega a valer. */
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .widget-hint {
@@ -462,8 +470,12 @@ a:hover {
 .widget-input {
   display: flex;
   gap: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid var(--color-border);
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .widget-input input {
