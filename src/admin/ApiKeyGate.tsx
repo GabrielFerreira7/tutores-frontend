@@ -2,7 +2,7 @@ import { FormEvent, ReactNode, useState } from "react";
 import { useApiKey } from "./ApiKeyContext";
 
 export function ApiKeyGate({ children }: { children: ReactNode }) {
-  const { apiKey, setApiKey } = useApiKey();
+  const { apiKey, authError, setApiKey } = useApiKey();
   const [input, setInput] = useState("");
 
   if (apiKey) {
@@ -20,6 +20,11 @@ export function ApiKeyGate({ children }: { children: ReactNode }) {
     <div className="api-key-gate">
       <h1>Acesso administrativo</h1>
       <p>Informe a chave de administrador (ADMIN_API_KEY) configurada no backend.</p>
+      {authError && (
+        <p role="alert" className="form-error">
+          {authError}
+        </p>
+      )}
       <form onSubmit={handleSubmit}>
         <input
           type="password"

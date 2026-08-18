@@ -1,26 +1,34 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { deactivateTutor, listTutors } from "../api/adminClient";
+import { isUnauthorized } from "../api/client";
 import type { Tutor } from "../types/tutor";
 import { useApiKey } from "./ApiKeyContext";
 
 export function TutorListPage() {
-  const { apiKey } = useApiKey();
+  const { apiKey, invalidateApiKey } = useApiKey();
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (key: string) => {
-    setLoading(true);
-    try {
-      setTutors(await listTutors(key));
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar tutores.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (key: string) => {
+      setLoading(true);
+      try {
+        setTutors(await listTutors(key));
+        setError(null);
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
+          return;
+        }
+        setError(err instanceof Error ? err.message : "Erro ao carregar tutores.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [invalidateApiKey]
+  );
 
   useEffect(() => {
     if (apiKey) {
@@ -30,8 +38,16 @@ export function TutorListPage() {
 
   async function handleDeactivate(id: string) {
     if (!apiKey) return;
-    await deactivateTutor(apiKey, id);
-    await load(apiKey);
+    try {
+      await deactivateTutor(apiKey, id);
+      await load(apiKey);
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
+        return;
+      }
+      setError(err instanceof Error ? err.message : "Erro ao desativar tutor.");
+    }
   }
 
   return (

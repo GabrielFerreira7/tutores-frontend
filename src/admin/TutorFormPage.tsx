@@ -1,11 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createTutor, getTutor, updateTutor } from "../api/adminClient";
+import { isUnauthorized } from "../api/client";
 import type { SourceInput } from "../types/tutor";
 import { useApiKey } from "./ApiKeyContext";
 
 export function TutorFormPage() {
-  const { apiKey } = useApiKey();
+  const { apiKey, invalidateApiKey } = useApiKey();
   const { tutorId } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(tutorId);
@@ -31,9 +32,12 @@ export function TutorFormPage() {
         setSources(tutor.sources.map((s) => ({ label: s.label, url: s.url })));
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Erro ao carregar tutor.");
+        if (cancelled) return;
+        if (isUnauthorized(err)) {
+          invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
+          return;
         }
+        setError(err instanceof Error ? err.message : "Erro ao carregar tutor.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -41,7 +45,7 @@ export function TutorFormPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey, tutorId]);
+  }, [apiKey, tutorId, invalidateApiKey]);
 
   function addSource() {
     setSources((prev) => [...prev, { label: "", url: "" }]);
@@ -75,6 +79,10 @@ export function TutorFormPage() {
       }
       navigate("/admin/tutors");
     } catch (err) {
+      if (isUnauthorized(err)) {
+        invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
+        return;
+      }
       setError(err instanceof Error ? err.message : "Erro ao salvar tutor.");
     } finally {
       setSaving(false);

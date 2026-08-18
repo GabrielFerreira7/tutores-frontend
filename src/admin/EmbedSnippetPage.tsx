@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getEmbedSnippet } from "../api/adminClient";
+import { isUnauthorized } from "../api/client";
 import type { EmbedSnippet } from "../types/tutor";
 import { useApiKey } from "./ApiKeyContext";
 
 export function EmbedSnippetPage() {
-  const { apiKey } = useApiKey();
+  const { apiKey, invalidateApiKey } = useApiKey();
   const { tutorId } = useParams();
   const [snippet, setSnippet] = useState<EmbedSnippet | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -15,8 +16,14 @@ export function EmbedSnippetPage() {
     if (!apiKey || !tutorId) return;
     getEmbedSnippet(apiKey, tutorId)
       .then(setSnippet)
-      .catch((err) => setError(err instanceof Error ? err.message : "Erro ao gerar snippet."));
-  }, [apiKey, tutorId]);
+      .catch((err) => {
+        if (isUnauthorized(err)) {
+          invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
+          return;
+        }
+        setError(err instanceof Error ? err.message : "Erro ao gerar snippet.");
+      });
+  }, [apiKey, tutorId, invalidateApiKey]);
 
   async function handleCopy() {
     if (!snippet) return;
