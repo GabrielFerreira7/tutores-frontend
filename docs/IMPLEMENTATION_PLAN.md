@@ -59,14 +59,14 @@ LTI 1.x/1.3, RAG vetorial/embeddings, pagamentos/faturamento, multi-tenant avan�
 
 ### Critérios de aceite finais (PRD seção 7) — checklist mestre
 
-- [ ] Dois repositórios (backend + frontend), histórico de commits coerente com uso de agentes
-- [ ] Tutor criável via API/admin e referenciável no embed
-- [ ] Página de widget carrega em iframe e conversa com o backend
-- [ ] Orquestração LangChain **ou** Pydantic AI, sem vector DB/embeddings como núcleo
-- [ ] READMEs com decisões, limitações do MVP, reprodução do demo
-- [ ] Confirmação explícita no README de que o código foi produzido via agentes de codificação
-- [ ] Diagrama simples de arquitetura (ASCII ou imagem)
-- [ ] Lista de "próximos passos" para produção (sem implementar)
+- [x] Dois repositórios (backend + frontend), histórico de commits coerente com uso de agentes
+- [x] Tutor criável via API/admin e referenciável no embed
+- [x] Página de widget carrega em iframe e conversa com o backend
+- [x] Orquestração LangChain **ou** Pydantic AI, sem vector DB/embeddings como núcleo
+- [x] READMEs com decisões, limitações do MVP, reprodução do demo
+- [x] Confirmação explícita no README de que o código foi produzido via agentes de codificação
+- [x] Diagrama simples de arquitetura (ASCII ou imagem)
+- [x] Lista de "próximos passos" para produção (sem implementar)
 
 ---
 
@@ -497,17 +497,17 @@ Etapas pequenas e incrementais, pensadas para serem conduzidas via agente de cod
 
 ## Definition of Done
 
-- [ ] Todos os itens do checklist de **Critérios de aceite** (seção Requirements acima) atendidos
-- [ ] Backend: CRUD de tutor, chat, tool de fonte, testes, lint, Docker, README completos
-- [ ] Frontend: dashboard admin, widget de embed, `embed-demo.html`, testes leves, lint, Docker, README completos
-- [ ] Nenhuma dependência de vector DB/embeddings no core de conhecimento
-- [ ] `.env.example` presente e sem segredos reais nos dois repos
-- [ ] Suítes de teste e linters passando limpos nos dois repos
-- [ ] `docker compose up` funcional em cada repo, com instrução de como conectar frontend↔backend
-- [ ] README com: como rodar localmente, variáveis de ambiente, decisões de arquitetura (LangChain vs Pydantic AI, HTTP vs WebSocket, etc.), limitações do MVP, fluxo embed ponta a ponta, confirmação explícita de uso de agentes de codificação
-- [ ] Diagrama de arquitetura incluído (os diagramas Mermaid deste documento servem de base)
-- [ ] Lista de "próximos passos para produção" documentada (ex.: Postgres, JWT multi-admin, streaming SSE, avaliação automatizada do agente, isolamento multi-tenant, expiração de embed token, WAF/SSRF hardening mais robusto)
-- [ ] Nenhum item de "fora de escopo" (seção 6 do PRD) foi implementado
+- [x] Todos os itens do checklist de **Critérios de aceite** (seção Requirements acima) atendidos
+- [x] Backend: CRUD de tutor, chat, tool de fonte, testes, lint, Docker, README completos
+- [x] Frontend: dashboard admin, widget de embed, `embed-demo.html`, testes leves, lint, Docker, README completos
+- [x] Nenhuma dependência de vector DB/embeddings no core de conhecimento
+- [x] `.env.example` presente e sem segredos reais nos dois repos
+- [x] Suítes de teste e linters passando limpos nos dois repos (CI em `.github/workflows/ci.yml`)
+- [x] `docker compose up` funcional em cada repo, com instrução de como conectar frontend↔backend
+- [x] README com: como rodar localmente, variáveis de ambiente, decisões de arquitetura (LangChain vs Pydantic AI, HTTP vs WebSocket, etc.), limitações do MVP, fluxo embed ponta a ponta, confirmação explícita de uso de agentes de codificação
+- [x] Diagrama de arquitetura incluído (os diagramas Mermaid deste documento servem de base)
+- [x] Lista de "próximos passos para produção" documentada (ex.: Postgres, JWT multi-admin, streaming SSE, avaliação automatizada do agente, isolamento multi-tenant, expiração de embed token, WAF/SSRF hardening mais robusto)
+- [x] Nenhum item de "fora de escopo" (seção 6 do PRD) foi implementado
 
 ---
 

@@ -6,6 +6,7 @@ import { EmbedSnippetPage } from "./admin/EmbedSnippetPage";
 import { TutorFormPage } from "./admin/TutorFormPage";
 import { TutorListPage } from "./admin/TutorListPage";
 import { WidgetPage } from "./widget/WidgetPage";
+import { NotFoundPage } from "./NotFoundPage";
 
 export function AppRouter() {
   return (
@@ -29,7 +30,8 @@ export function AppRouter() {
         <Route path="tutors/:tutorId/embed" element={<EmbedSnippetPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/admin/tutors" replace />} />
+      <Route path="/admin/*" element={<Navigate to="/admin/tutors" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

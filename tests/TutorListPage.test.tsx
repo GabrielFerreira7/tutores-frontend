@@ -58,7 +58,9 @@ describe("TutorListPage", () => {
   });
 
   it("invalidates the stored key on a 401 instead of showing the authenticated screen", async () => {
-    listTutorsMock.mockRejectedValueOnce(new ApiError(401, "Chave de administrador ausente ou inválida."));
+    listTutorsMock.mockRejectedValueOnce(
+      new ApiError(401, "Chave de administrador ausente ou inválida.")
+    );
 
     renderTutorList();
 
@@ -78,12 +80,16 @@ describe("TutorListPage", () => {
 
     renderTutorList();
 
-    const activateButton = await screen.findByRole("button", { name: /ativar/i });
+    // Âncoras de início/fim (^$) evitam que este matcher também capture "Desativar"
+    // caso os dois botões um dia coexistam na mesma linha.
+    const activateButton = await screen.findByRole("button", { name: /^ativar$/i });
     expect(screen.queryByRole("button", { name: /desativar/i })).not.toBeInTheDocument();
 
     await user.click(activateButton);
 
-    await waitFor(() => expect(activateTutorMock).toHaveBeenCalledWith("wrong-admin-key", "tutor-1"));
+    await waitFor(() =>
+      expect(activateTutorMock).toHaveBeenCalledWith("wrong-admin-key", "tutor-1")
+    );
     expect(listTutorsMock).toHaveBeenCalledTimes(2);
   });
 });

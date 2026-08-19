@@ -11,6 +11,7 @@ export function TutorListPage() {
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
   const load = useCallback(
     async (key: string) => {
@@ -42,7 +43,8 @@ export function TutorListPage() {
     action: "activate" | "deactivate",
     apply: (key: string, id: string) => Promise<Tutor>
   ) {
-    if (!apiKey) return;
+    if (!apiKey || pendingIds.has(id)) return;
+    setPendingIds((prev) => new Set(prev).add(id));
     try {
       await apply(apiKey, id);
       await load(apiKey);
@@ -53,6 +55,12 @@ export function TutorListPage() {
       }
       const verb = action === "activate" ? "ativar" : "desativar";
       setError(err instanceof Error ? err.message : `Erro ao ${verb} tutor.`);
+    } finally {
+      setPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   }
 
@@ -73,44 +81,53 @@ export function TutorListPage() {
       {!loading && tutors.length === 0 && !error && <p>Nenhum tutor cadastrado ainda.</p>}
 
       {tutors.length > 0 && (
-        <table className="tutor-table">
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tutors.map((tutor) => (
-              <tr key={tutor.id}>
-                <td>{tutor.title}</td>
-                <td>
-                  <span className={`status-badge status-${tutor.status}`}>{tutor.status}</span>
-                </td>
-                <td className="row-actions">
-                  <Link to={`/admin/tutors/${tutor.id}`}>Editar</Link>
-                  <Link to={`/admin/tutors/${tutor.id}/embed`}>Embed</Link>
-                  {tutor.status === "active" ? (
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(tutor.id, "deactivate", deactivateTutor)}
-                    >
-                      Desativar
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(tutor.id, "activate", activateTutor)}
-                    >
-                      Ativar
-                    </button>
-                  )}
-                </td>
+        <div className="table-scroll">
+          <table className="tutor-table">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {tutors.map((tutor) => {
+                const isPending = pendingIds.has(tutor.id);
+                return (
+                  <tr key={tutor.id}>
+                    <td>{tutor.title}</td>
+                    <td>
+                      <span className={`status-badge status-${tutor.status}`}>{tutor.status}</span>
+                    </td>
+                    <td className="row-actions">
+                      <Link to={`/admin/tutors/${tutor.id}`}>Editar</Link>
+                      <Link to={`/admin/tutors/${tutor.id}/embed`}>Embed</Link>
+                      {tutor.status === "active" ? (
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() =>
+                            handleStatusChange(tutor.id, "deactivate", deactivateTutor)
+                          }
+                        >
+                          Desativar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleStatusChange(tutor.id, "activate", activateTutor)}
+                        >
+                          Ativar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

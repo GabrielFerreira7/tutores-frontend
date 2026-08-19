@@ -17,7 +17,11 @@ export function TutorFormPage() {
   const [systemInstructions, setSystemInstructions] = useState("");
   const [sources, setSources] = useState<SourceInput[]>([]);
   const [loading, setLoading] = useState(isEditing);
-  const [error, setError] = useState<string | null>(null);
+  // Erro de carregamento (edição) impede renderizar o formulário — submetê-lo vazio
+  // apagaria o conteúdo real do tutor. Erro de submissão é só exibido inline, com o
+  // formulário (e o que o usuário já digitou) intactos para tentar de novo.
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -38,7 +42,7 @@ export function TutorFormPage() {
           invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
           return;
         }
-        setError(err instanceof Error ? err.message : "Erro ao carregar tutor.");
+        setLoadError(err instanceof Error ? err.message : "Erro ao carregar tutor.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -64,14 +68,20 @@ export function TutorFormPage() {
     event.preventDefault();
     if (!apiKey) return;
 
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setSubmitError("O título não pode ficar em branco.");
+      return;
+    }
+
     setSaving(true);
-    setError(null);
+    setSubmitError(null);
     try {
       const payload = {
-        title,
-        short_description: shortDescription,
-        system_instructions: systemInstructions,
-        sources,
+        title: trimmedTitle,
+        short_description: shortDescription.trim(),
+        system_instructions: systemInstructions.trim(),
+        sources: sources.map((s) => ({ label: s.label.trim(), url: s.url.trim() })),
       };
       if (isEditing && tutorId) {
         await updateTutor(apiKey, tutorId, payload);
@@ -84,7 +94,7 @@ export function TutorFormPage() {
         invalidateApiKey("Chave de administrador inválida. Informe a chave correta.");
         return;
       }
-      setError(err instanceof Error ? err.message : "Erro ao salvar tutor.");
+      setSubmitError(err instanceof Error ? err.message : "Erro ao salvar tutor.");
     } finally {
       setSaving(false);
     }
@@ -92,6 +102,17 @@ export function TutorFormPage() {
 
   if (loading) {
     return <Spinner />;
+  }
+
+  if (loadError) {
+    return (
+      <div>
+        <h1>Editar tutor</h1>
+        <p role="alert" className="form-error">
+          {loadError}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -154,9 +175,9 @@ export function TutorFormPage() {
           </button>
         </fieldset>
 
-        {error && (
+        {submitError && (
           <p role="alert" className="form-error">
-            {error}
+            {submitError}
           </p>
         )}
 

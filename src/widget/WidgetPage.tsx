@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { getChatHistory, sendChatMessage } from "../api/publicClient";
+import { getChatHistory, getPublicTutorInfo, sendChatMessage } from "../api/publicClient";
 
 interface DisplayMessage {
   role: "user" | "assistant";
@@ -10,6 +10,35 @@ interface DisplayMessage {
 
 function sessionStorageKey(tutorId: string): string {
   return `tutores_widget_session_${tutorId}`;
+}
+
+// O widget roda dentro de um <iframe> cross-origin em qualquer site integrador. Navegadores
+// com bloqueio de armazenamento de terceiros (aba anônima do Chrome por padrão, Safari com
+// ITP) lançam SecurityError ao tocar em localStorage nesse contexto — sem o try/catch, isso
+// derrubava o widget inteiro para uma tela em branco. Aqui a conversa continua funcionando
+// dentro da sessão atual, só não sobrevive a um reload do iframe.
+function readStoredSessionId(tutorId: string): string | null {
+  try {
+    return localStorage.getItem(sessionStorageKey(tutorId));
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSessionId(tutorId: string, sessionId: string): void {
+  try {
+    localStorage.setItem(sessionStorageKey(tutorId), sessionId);
+  } catch {
+    // Armazenamento indisponível — a sessão fica só em memória para este carregamento.
+  }
+}
+
+function clearStoredSessionId(tutorId: string): void {
+  try {
+    localStorage.removeItem(sessionStorageKey(tutorId));
+  } catch {
+    // Nada a limpar se nunca foi possível escrever.
+  }
 }
 
 export function WidgetPage() {
@@ -22,11 +51,19 @@ export function WidgetPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tutorTitle, setTutorTitle] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!tutorId || !token) return;
-    const storedSessionId = localStorage.getItem(sessionStorageKey(tutorId));
+
+    getPublicTutorInfo({ tutorId, embedToken: token })
+      .then((info) => setTutorTitle(info.title))
+      .catch(() => {
+        // Sem nome de tutor não é uma falha fatal para o widget — segue sem cabeçalho.
+      });
+
+    const storedSessionId = readStoredSessionId(tutorId);
     if (!storedSessionId) return;
 
     setSessionId(storedSessionId);
@@ -35,7 +72,7 @@ export function WidgetPage() {
         setMessages(history.messages.map((m) => ({ role: m.role, content: m.content })));
       })
       .catch(() => {
-        localStorage.removeItem(sessionStorageKey(tutorId));
+        clearStoredSessionId(tutorId);
         setSessionId(null);
       });
   }, [tutorId, token]);
@@ -57,9 +94,13 @@ export function WidgetPage() {
     try {
       const response = await sendChatMessage({ tutorId, embedToken: token, sessionId, message });
       setSessionId(response.session_id);
-      localStorage.setItem(sessionStorageKey(tutorId), response.session_id);
+      writeStoredSessionId(tutorId, response.session_id);
       setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
     } catch (err) {
+      // A mensagem otimista é desfeita e o texto volta pro campo — evita que o usuário
+      // veja a pergunta "enviada" quando na verdade falhou, sem jeito claro de reenviar.
+      setMessages((prev) => prev.slice(0, -1));
+      setInput(message);
       setError(err instanceof Error ? err.message : "Não foi possível enviar a mensagem.");
     } finally {
       setSending(false);
@@ -69,14 +110,19 @@ export function WidgetPage() {
   if (!tutorId || !token) {
     return (
       <div className="widget widget-error-state">
-        Parâmetros de embed ausentes. O iframe precisa de <code>tutorId</code> e{" "}
-        <code>token</code> na URL.
+        Parâmetros de embed ausentes. O iframe precisa de <code>tutorId</code> e <code>token</code>{" "}
+        na URL.
       </div>
     );
   }
 
   return (
     <div className="widget">
+      {tutorTitle && (
+        <div className="widget-header">
+          <span className="widget-header-title">{tutorTitle}</span>
+        </div>
+      )}
       <div className="widget-messages">
         {messages.length === 0 && (
           <p className="widget-hint">Envie uma mensagem para começar a conversa.</p>
@@ -90,7 +136,11 @@ export function WidgetPage() {
             )}
           </div>
         ))}
-        {sending && <div className="widget-message widget-message-assistant">Digitando...</div>}
+        {sending && (
+          <div className="widget-message widget-message-assistant" role="status" aria-live="polite">
+            Digitando...
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
