@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { EmbedSnippetPage } from "../src/admin/EmbedSnippetPage";
 
 const getEmbedSnippetMock = vi.fn();
@@ -36,6 +37,10 @@ function renderEmbedPage() {
 }
 
 describe("EmbedSnippetPage", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("renders the direct URL as a clickable link that opens in a new tab", async () => {
     const embedUrl = "http://localhost:5173/widget?tutorId=tutor-1&token=abc123";
     getEmbedSnippetMock.mockResolvedValueOnce({
@@ -50,5 +55,44 @@ describe("EmbedSnippetPage", () => {
     expect(link).toHaveAttribute("href", embedUrl);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
+  });
+
+  it("copies the snippet when the clipboard API is available", async () => {
+    getEmbedSnippetMock.mockResolvedValueOnce({
+      tutor_id: "tutor-1",
+      embed_url: "http://localhost:5173/widget?tutorId=tutor-1&token=abc123",
+      iframe_snippet: '<iframe src="..."></iframe>',
+    });
+    const user = userEvent.setup();
+    // Precisa vir depois de userEvent.setup(): ele instala seu próprio stub de
+    // navigator.clipboard (para suportar .paste()/.copy()), que substituiria o nosso
+    // se a ordem fosse invertida.
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
+
+    renderEmbedPage();
+
+    await user.click(await screen.findByRole("button", { name: /copiar/i }));
+
+    await waitFor(() => expect(screen.getByRole("button")).toHaveTextContent("Copiado!"));
+    expect(writeText).toHaveBeenCalledWith('<iframe src="..."></iframe>');
+  });
+
+  it("shows a manual fallback instead of crashing when the clipboard API is unavailable", async () => {
+    getEmbedSnippetMock.mockResolvedValueOnce({
+      tutor_id: "tutor-1",
+      embed_url: "http://localhost:5173/widget?tutorId=tutor-1&token=abc123",
+      iframe_snippet: '<iframe src="..."></iframe>',
+    });
+    const user = userEvent.setup();
+    vi.stubGlobal("navigator", { ...navigator, clipboard: undefined });
+
+    renderEmbedPage();
+
+    await user.click(await screen.findByRole("button", { name: /copiar/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button")).toHaveTextContent(/selecione o texto manualmente/i)
+    );
   });
 });
